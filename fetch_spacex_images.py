@@ -3,7 +3,7 @@ import os
 import pathlib
 import requests
 
-import utils
+from downloader import download_img
 
 
 def read_args():
@@ -15,7 +15,6 @@ def read_args():
     parser.add_argument(
         '-i',
         '--id',
-        default=None,
         help='SpaceX launch ID',
     )
     parser.add_argument(
@@ -39,10 +38,10 @@ def fetch_launch_imgs(launch_url, imgs_folder):
 
     for i, img_url in enumerate(imgs_urls):
         filepath = os.path.join(imgs_folder, f'space_{i}.jpg')
-        utils.download_img(img_url, filepath)
+        download_img(img_url, filepath)
 
 
-if __name__ == '__main__':
+def main():
     args = read_args()
 
     pathlib.Path(args.path).mkdir(exist_ok=True)
@@ -50,3 +49,7 @@ if __name__ == '__main__':
     launch_url_template = 'https://api.spacexdata.com/v5/launches/{}'
     launch_url = launch_url_template.format(args.id if args.id else 'latest')
     fetch_launch_imgs(launch_url, args.path)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,13 +1,13 @@
 import argparse
 import os
 import pathlib
-import urllib.parse
 from datetime import datetime
 
 from environs import Env
 import requests
 
-import utils
+from downloader import download_img
+
 
 env = Env()
 env.read_env()
@@ -60,7 +60,7 @@ def generate_img_url(date, image_name):
     )
 
 
-if __name__ == '__main__':
+def main():
     args = read_args()
 
     pathlib.Path(args.path).mkdir(exist_ok=True)
@@ -73,10 +73,8 @@ if __name__ == '__main__':
     for img_name in imgs_names:
         img_url = generate_img_url(args.date, img_name)
         filepath = os.path.join(args.path, f'{img_name}.png')
-        utils.download_img(img_url, filepath, env('API_KEY'))
-
-# print(get_imgs(url))
+        download_img(img_url, filepath, env('API_KEY'))
 
 
-# https://api.nasa.gov/EPIC/archive/natural/2023/02/19/png/epic_1b_20230219100448.png?api_key=DEMO_KEY
-
+if __name__ == '__main__':
+    main()
