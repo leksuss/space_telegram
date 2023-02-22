@@ -54,7 +54,7 @@ def is_allowed_ext(url):
     return ext in allowed_ext
 
 
-def fetch_imgs_urls(url, count, api_key=env('API_KEY')):
+def fetch_imgs_urls(url, count, api_key=env('NASA_API_KEY')):
 
     params = {
         'count': count,

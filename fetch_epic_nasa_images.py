@@ -37,7 +37,7 @@ def read_args():
     return args
 
 
-def fetch_imgs_names(url, api_key=env('API_KEY')):
+def fetch_imgs_names(url, api_key=env('NASA_API_KEY')):
 
     params = {
         'api_key': api_key,
@@ -73,7 +73,7 @@ def main():
     for img_name in imgs_names:
         img_url = generate_img_url(args.date, img_name)
         filepath = os.path.join(args.path, f'{img_name}.png')
-        download_img(img_url, filepath, env('API_KEY'))
+        download_img(img_url, filepath, env('NASA_API_KEY'))
 
 
 if __name__ == '__main__':
