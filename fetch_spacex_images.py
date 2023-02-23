@@ -20,7 +20,7 @@ def read_args():
     parser.add_argument(
         '-p',
         '--path',
-        default='spacex_images',
+        default='images',
         type=pathlib.Path,
         help='Path to folder to save images',
     )
