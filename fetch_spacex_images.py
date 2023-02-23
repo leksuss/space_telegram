@@ -1,5 +1,4 @@
 import argparse
-import os
 import pathlib
 import requests
 
@@ -28,7 +27,7 @@ def read_args():
     return args
 
 
-def fetch_launch_imgs(launch_url, imgs_folder):
+def fetch_urls_imgs(launch_url):
 
     response = requests.get(launch_url)
     response.raise_for_status()
@@ -36,20 +35,21 @@ def fetch_launch_imgs(launch_url, imgs_folder):
 
     imgs_urls = launch['links']['flickr']['original']
 
-    for i, img_url in enumerate(imgs_urls):
-        filepath = os.path.join(imgs_folder, f'space_{i}.jpg')
-        download_img(img_url, filepath)
+    return imgs_urls
 
 
-def main():
+def download_imgs(dirpath, launch_id=None):
+
+    launch_url_template = 'https://api.spacexdata.com/v5/launches/{}'
+    launch_url = launch_url_template.format(launch_id or 'latest')
+    imgs_urls = fetch_urls_imgs(launch_url)
+    for img_url in imgs_urls:
+        download_img(img_url, dirpath)
+
+
+if __name__ == '__main__':
     args = read_args()
 
     pathlib.Path(args.path).mkdir(exist_ok=True)
 
-    launch_url_template = 'https://api.spacexdata.com/v5/launches/{}'
-    launch_url = launch_url_template.format(args.id if args.id else 'latest')
-    fetch_launch_imgs(launch_url, args.path)
-
-
-if __name__ == '__main__':
-    main()
+    download_imgs(args.path, args.id)

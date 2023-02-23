@@ -1,5 +1,4 @@
 import argparse
-import os
 import pathlib
 from datetime import datetime
 
@@ -22,7 +21,6 @@ def read_args():
     parser.add_argument(
         '-d',
         '--date',
-        default=datetime.today().strftime('%Y-%m-%d'),
         type=lambda d: datetime.strptime(d, '%Y-%m-%d').date(),
         help='Date of taking a photo, format yyyy-mm-dd',
     )
@@ -37,7 +35,7 @@ def read_args():
     return args
 
 
-def fetch_imgs_names(url, api_key=env('NASA_API_KEY')):
+def fetch_imgs_names_and_date(url, api_key=env('NASA_API_KEY')):
 
     params = {
         'api_key': api_key,
@@ -45,8 +43,15 @@ def fetch_imgs_names(url, api_key=env('NASA_API_KEY')):
 
     response = requests.get(url, params=params)
     response.raise_for_status()
+    epic_images = response.json()
 
-    return (epic_image['image'] for epic_image in response.json())
+    imgs_names = tuple(epic_image['image'] for epic_image in epic_images)
+    latest_date = datetime.strptime(
+        epic_images[0]['date'],
+        '%Y-%m-%d %H:%M:%S'
+    ).date()
+
+    return imgs_names, latest_date
 
 
 def generate_img_url(date, image_name):
@@ -60,21 +65,23 @@ def generate_img_url(date, image_name):
     )
 
 
-def main():
+def download_imgs(dirpath, setted_date=None):
+
+    url = 'https://api.nasa.gov/EPIC/api/natural'
+    if setted_date:
+        url += f'/date/{setted_date.strftime("%Y-%m-%d")}'
+
+    imgs_names, latest_date = fetch_imgs_names_and_date(url)
+
+    for img_name in imgs_names:
+        img_url = generate_img_url(setted_date or latest_date, img_name)
+        download_img(img_url, dirpath, env('NASA_API_KEY'))
+        break
+
+
+if __name__ == '__main__':
     args = read_args()
 
     pathlib.Path(args.path).mkdir(exist_ok=True)
 
-    url = 'https://api.nasa.gov/EPIC/api/natural/{}'.format(
-        args.date.strftime("%Y-%m-%d"),
-    )
-
-    imgs_names = fetch_imgs_names(url)
-    for img_name in imgs_names:
-        img_url = generate_img_url(args.date, img_name)
-        filepath = os.path.join(args.path, f'{img_name}.png')
-        download_img(img_url, filepath, env('NASA_API_KEY'))
-
-
-if __name__ == '__main__':
-    main()
+    download_imgs(args.path, args.date)
