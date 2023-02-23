@@ -132,7 +132,5 @@ dmypy.json
 # MacOS temp files
 .DS_Store
 
-# project media folders
-/spacex_images
-/apod_images
-/epic_images
+# project media folder
+/images
