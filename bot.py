@@ -26,6 +26,12 @@ def read_args():
         '''
     )
     parser.add_argument(
+        'filepath',
+        required=False,
+        type=str,
+        help='Path to file for manual posting just once',
+    )
+    parser.add_argument(
         '-d',
         '--delay',
         default=DELAY_BETWEEN_PUBLISHES_IN_HOURS,
@@ -39,29 +45,52 @@ def read_args():
         type=pathlib.Path,
         help='Path to folder to save downloaded images',
     )
-
+    parser.add_argument(
+        '-r',
+        '--infinity_run',
+        default=False,
+        type=bool,
+        help='Set infinity posting mode',
+    )
     args = parser.parse_args()
     return args
 
 
-def run_bot(bot, dirpath, delay):
+def post_random_image(bot, dirpath):
+
+    download_images_if_needed(dirpath)
+
+    random_filename = random.choice(os.listdir(dirpath))
+    filepath = os.path.join(dirpath, random_filename)
+
+    post_image(bot, filepath)
+
+    return filepath
+
+
+def post_image(bot, filepath):
+
+    bot.send_photo(
+        chat_id=env('TG_CHAT_ID'),
+        photo=open(filepath, 'rb'),
+    )
+
+
+def download_images_if_needed(dirpath):
+
+    if not os.listdir(dirpath):
+        fetch_spacex_images.download_imgs(dirpath)
+        fetch_apod_nasa_images.download_imgs(dirpath)
+        fetch_epic_nasa_images.download_imgs(dirpath)
+
+
+def run_infinity_posting(bot, dirpath, delay):
 
     while True:
-        # if there is no unpublished images, let's download it
-        if not os.listdir(dirpath):
-            fetch_spacex_images.download_imgs(dirpath)
-            fetch_apod_nasa_images.download_imgs(dirpath)
-            fetch_epic_nasa_images.download_imgs(dirpath)
+        download_images_if_needed(dirpath)
+        posted_filepath = post_random_image(bot, dirpath)
 
-        random_filename = random.choice(os.listdir(dirpath))
-        filepath = os.path.join(dirpath, random_filename)
-
-        bot.send_photo(
-            chat_id=env('TG_CHAT_ID'),
-            photo=open(filepath, 'rb'),
-        )
-
-        os.remove(filepath)
+        os.remove(posted_filepath)
 
         time.sleep(delay * 3600)  # hours to seconds
 
@@ -72,4 +101,10 @@ if __name__ == '__main__':
     pathlib.Path(args.path).mkdir(exist_ok=True)
 
     bot = telegram.Bot(token=env('TG_BOT_API_KEY'))
-    run_bot(bot, args.path, args.delay)
+
+    if args.filepath:
+        post_image(bot, args.filepath)
+    elif args.infinity_run:
+        run_infinity_posting(bot, args.path, args.delay)
+    else:
+        post_random_image(bot, args.path)
