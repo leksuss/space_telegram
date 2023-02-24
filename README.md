@@ -8,7 +8,7 @@ This is bundle of scripts which can download space images from SpaceX and NASA v
  - python3.6+
  - `environs` library
  - `requests` library
- - `python-telegram-bot` library
+ - `python-telegram-bot==13.0` library
 
 
 ## How to install
@@ -37,7 +37,7 @@ Also you should made some things with telegram:
  - [create telegram bot](https://core.telegram.org/bots#how-do-i-create-a-bot), receive token
  - create telegram channel (or use existing) and get it's username (it looks like `@username`).
 
-Use taken information for fill settings in `.env` file. You can use `.env_example` as template:
+Use taken information for fill settings in `.env` file. You can use `.env_example` as a template:
 ```
 cp .env_example .env
 vim .env
@@ -45,7 +45,7 @@ vim .env
 
 ## How it works
 
-Script uses three different sources for downloading space images and stores it in one folder. To prevent duplicates it uses SHA1. **Note, image removed after it's posting.** If there is no image in folder (all images was published), script is downloading another portion of images.
+Script uses three different sources for downloading space images and stores it in one folder. To prevent duplicates it uses SHA1. If there is no image in folder (all images was published), script will download another portion of images. **Note, image is removing from images folder after it'fs posting.**
 
 
 ## How to use
@@ -56,20 +56,35 @@ Fill `.env` file as shown above and run command:
 ```
 python3 bot.py
 ```
-And that's it! Bot will post one image every 4 hour at your telegram channel.
+And that's it! Bot will download images from sources and post one random image in your telegram channel.
 
 
 ### Arguments
 
-You can also set delay in hours between posting, default value is 4:
+You can also post your own image stored on your device, just set path to it location. The image will be posted immediately (and will not be removed):
 ```
-python3 bot.py --delay 2
+python3 bot.py -f my_photos/cool_space_image.png
 ```
-And a folder for downloaded images, default value is `images`:
+
+You can run infinity posting passing `-r` argument. In this case bot will post image every 4 hours with no ending from download folder:
 ```
-python3 bot.py --path downloaded_images
+python3 bot.py -r
 ```
-Of course you can combine it. And both of them is optional.
+
+To change hourly delay between posting, set `-d`:
+```
+python3 bot.py -d 2
+```
+
+Also you can change folder for downloaded images (default is `images`):
+```
+python3 bot.py -r -p downloaded_images
+```
+
+Here is example of infinity posting from `downloaded_images` folder with 1 hour delay:
+```
+python3 bot.py -r -p downloaded_images -d 1
+```
 
 
 ### Using scripts for download images
@@ -91,6 +106,6 @@ python3 fetch_epic_nasa_images.py --date=yyyy-mm-dd
 python3 fetch_spacex_images.py --count=20
 ```
 
-### Use your own images
+### Use your own images with infinity posting
 
-You can use any images you have or you found. Just upload it on `images` folder (or folder you changed from default). But note, **it will deleted after publication.**
+You can use any images you have or you found. Just copy it on `images` folder (or folder you changed from default). But note, **it will deleted after publication.**
