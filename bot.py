@@ -26,7 +26,8 @@ def read_args():
         '''
     )
     parser.add_argument(
-        'filepath',
+        '-f',
+        '--filepath',
         required=False,
         type=str,
         help='Path to file for manual posting just once',
@@ -48,8 +49,7 @@ def read_args():
     parser.add_argument(
         '-r',
         '--infinity_run',
-        default=False,
-        type=bool,
+        action='store_true',
         help='Set infinity posting mode',
     )
     args = parser.parse_args()
@@ -107,4 +107,5 @@ if __name__ == '__main__':
     elif args.infinity_run:
         run_infinity_posting(bot, args.path, args.delay)
     else:
-        post_random_image(bot, args.path)
+        posted_filepath = post_random_image(bot, args.path)
+        os.remove(posted_filepath)
