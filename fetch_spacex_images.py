@@ -38,10 +38,10 @@ def fetch_urls_imgs(launch_url):
     return imgs_urls
 
 
-def download_imgs(dirpath, launch_id=None):
+def download_imgs(dirpath, launch_id='latest'):
 
     launch_url_template = 'https://api.spacexdata.com/v5/launches/{}'
-    launch_url = launch_url_template.format(launch_id or 'latest')
+    launch_url = launch_url_template.format(launch_id)
     imgs_urls = fetch_urls_imgs(launch_url)
     for img_url in imgs_urls:
         download_img(img_url, dirpath)
