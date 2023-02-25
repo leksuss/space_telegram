@@ -14,9 +14,6 @@ import fetch_epic_nasa_images
 
 DELAY_BETWEEN_PUBLISHES_IN_HOURS = 4
 
-env = Env()
-env.read_env()
-
 
 def read_args():
     parser = argparse.ArgumentParser(
@@ -56,40 +53,40 @@ def read_args():
     return args
 
 
-def post_random_image(bot, dirpath):
+def post_random_image(bot, chat_id, dirpath):
 
     download_images_if_needed(dirpath)
 
     random_filename = random.choice(os.listdir(dirpath))
     filepath = os.path.join(dirpath, random_filename)
 
-    post_image(bot, filepath)
+    post_image(bot, chat_id, filepath)
 
     return filepath
 
 
-def post_image(bot, filepath):
+def post_image(bot, chat_id, filepath):
 
     with open(filepath, 'rb') as f:
         bot.send_photo(
-            chat_id=env('TG_CHAT_ID'),
+            chat_id=chat_id,
             photo=f,
         )
 
 
-def download_images_if_needed(dirpath):
+def download_images_if_needed(nasa_api_key, dirpath):
 
     if not os.listdir(dirpath):
         fetch_spacex_images.download_imgs(dirpath)
-        fetch_apod_nasa_images.download_imgs(dirpath)
-        fetch_epic_nasa_images.download_imgs(dirpath)
+        fetch_apod_nasa_images.download_imgs(nasa_api_key, dirpath)
+        fetch_epic_nasa_images.download_imgs(nasa_api_key, dirpath)
 
 
-def run_infinity_posting(bot, dirpath, delay):
+def run_infinity_posting(bot, nasa_api_key, chat_id, dirpath, delay):
 
     while True:
-        download_images_if_needed(dirpath)
-        posted_filepath = post_random_image(bot, dirpath)
+        download_images_if_needed(nasa_api_key, dirpath)
+        posted_filepath = post_random_image(bot, chat_id, dirpath)
 
         os.remove(posted_filepath)
 
@@ -97,16 +94,22 @@ def run_infinity_posting(bot, dirpath, delay):
 
 
 if __name__ == '__main__':
+    env = Env()
+    env.read_env()
+    chat_id = env('TG_CHAT_ID')
+    tg_token = env('TG_BOT_API_KEY')
+    nasa_api_key = env('NASA_API_KEY')
+
     args = read_args()
 
     pathlib.Path(args.path).mkdir(exist_ok=True)
 
-    bot = telegram.Bot(token=env('TG_BOT_API_KEY'))
+    bot = telegram.Bot(token=tg_token)
 
     if args.filepath:
-        post_image(bot, args.filepath)
+        post_image(bot, chat_id, args.filepath)
     elif args.infinity_run:
-        run_infinity_posting(bot, args.path, args.delay)
+        run_infinity_posting(bot, nasa_api_key, chat_id, args.path, args.delay)
     else:
-        posted_filepath = post_random_image(bot, args.path)
+        posted_filepath = post_random_image(bot, chat_id, args.path)
         os.remove(posted_filepath)

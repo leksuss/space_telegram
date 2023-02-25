@@ -9,9 +9,6 @@ from downloader import download_img
 
 COUNT_DOWNLOADED_IMGS = 10
 
-env = Env()
-env.read_env()
-
 
 def read_args():
     parser = argparse.ArgumentParser(
@@ -37,7 +34,7 @@ def read_args():
     return args
 
 
-def fetch_imgs_urls(url, count, api_key=env('NASA_API_KEY')):
+def fetch_imgs_urls(api_key, url, count):
 
     params = {
         'count': count,
@@ -53,17 +50,21 @@ def fetch_imgs_urls(url, count, api_key=env('NASA_API_KEY')):
     return imgs_urls
 
 
-def download_imgs(dirpath, count=COUNT_DOWNLOADED_IMGS):
+def download_imgs(api_key, dirpath, count=COUNT_DOWNLOADED_IMGS):
 
     url = 'https://api.nasa.gov/planetary/apod'
-    imgs_urls = fetch_imgs_urls(url, count)
+    imgs_urls = fetch_imgs_urls(api_key, url, count)
     for img_url in imgs_urls:
-        download_img(img_url, dirpath)
+        download_img(img_url, dirpath, api_key)
 
 
 if __name__ == '__main__':
+    env = Env()
+    env.read_env()
+    api_key = env('NASA_API_KEY')
+
     args = read_args()
 
     pathlib.Path(args.path).mkdir(exist_ok=True)
 
-    download_imgs(args.path, args.count)
+    download_imgs(api_key, args.path, args.count)

@@ -8,10 +8,6 @@ import requests
 from downloader import download_img
 
 
-env = Env()
-env.read_env()
-
-
 def read_args():
     parser = argparse.ArgumentParser(
         description='''
@@ -35,7 +31,7 @@ def read_args():
     return args
 
 
-def fetch_imgs_names_and_date(url, api_key=env('NASA_API_KEY')):
+def fetch_imgs_names_and_date(url, api_key):
 
     params = {
         'api_key': api_key,
@@ -65,7 +61,7 @@ def generate_img_url(date, image_name):
     )
 
 
-def download_imgs(dirpath, setted_date=None):
+def download_imgs(api_key, dirpath, setted_date=None):
 
     url = 'https://api.nasa.gov/EPIC/api/natural'
     if setted_date:
@@ -75,13 +71,16 @@ def download_imgs(dirpath, setted_date=None):
 
     for img_name in imgs_names:
         img_url = generate_img_url(setted_date or latest_date, img_name)
-        download_img(img_url, dirpath, env('NASA_API_KEY'))
-        break
+        download_img(img_url, dirpath, api_key)
 
 
 if __name__ == '__main__':
+    env = Env()
+    env.read_env()
+    api_key = env('NASA_API_KEY')
+
     args = read_args()
 
     pathlib.Path(args.path).mkdir(exist_ok=True)
 
-    download_imgs(args.path, args.date)
+    download_imgs(api_key, args.path, args.date)
