@@ -55,8 +55,6 @@ def read_args():
 
 def post_random_image(bot, chat_id, dirpath):
 
-    download_images_if_needed(dirpath)
-
     random_filename = random.choice(os.listdir(dirpath))
     filepath = os.path.join(dirpath, random_filename)
 
@@ -74,18 +72,19 @@ def post_image(bot, chat_id, filepath):
         )
 
 
-def download_images_if_needed(nasa_api_key, dirpath):
+def download_images(nasa_api_key, dirpath):
 
-    if not os.listdir(dirpath):
-        fetch_spacex_images.download_imgs(dirpath)
-        fetch_apod_nasa_images.download_imgs(nasa_api_key, dirpath)
-        fetch_epic_nasa_images.download_imgs(nasa_api_key, dirpath)
+    fetch_spacex_images.download_imgs(dirpath)
+    fetch_apod_nasa_images.download_imgs(nasa_api_key, dirpath)
+    fetch_epic_nasa_images.download_imgs(nasa_api_key, dirpath)
 
 
 def run_infinity_posting(bot, nasa_api_key, chat_id, dirpath, delay):
 
     while True:
-        download_images_if_needed(nasa_api_key, dirpath)
+        if not os.listdir(dirpath):
+            download_images(nasa_api_key, dirpath)
+
         posted_filepath = post_random_image(bot, chat_id, dirpath)
 
         os.remove(posted_filepath)
@@ -111,5 +110,7 @@ if __name__ == '__main__':
     elif args.infinity_run:
         run_infinity_posting(bot, nasa_api_key, chat_id, args.path, args.delay)
     else:
+        if not os.listdir(args.path):
+            download_images(nasa_api_key, args.path)
         posted_filepath = post_random_image(bot, chat_id, args.path)
         os.remove(posted_filepath)
