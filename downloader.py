@@ -22,16 +22,21 @@ def download_img(url, dirpath, api_key=None):
 
     file_hash = hashlib.sha1(response.content).hexdigest()
     file_ext = fetch_img_ext(url)
+    file_size = len(response.content)
     filename = f'{file_hash}.{file_ext}'
 
-    if all([
-        not is_downloaded(file_hash, dirpath),
-        file_ext in ('jpg', 'jpeg', 'gif', 'png'),
-        len(response.content) < IMG_MAX_SIZE
-    ]):
+    if is_should_download(file_size, file_ext, file_hash, dirpath):
         filepath = os.path.join(dirpath, filename)
         with open(filepath, 'wb') as file:
             file.write(response.content)
+
+
+def is_should_download(file_size, file_ext, file_hash, dirpath):
+    return all([
+        not is_downloaded(file_hash, dirpath),
+        file_ext in ('jpg', 'jpeg', 'gif', 'png'),
+        file_size < IMG_MAX_SIZE,
+    ])
 
 
 def is_downloaded(file_hash, dirpath):
