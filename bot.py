@@ -70,10 +70,11 @@ def post_random_image(bot, dirpath):
 
 def post_image(bot, filepath):
 
-    bot.send_photo(
-        chat_id=env('TG_CHAT_ID'),
-        photo=open(filepath, 'rb'),
-    )
+    with open(filepath, 'rb') as f:
+        bot.send_photo(
+            chat_id=env('TG_CHAT_ID'),
+            photo=f,
+        )
 
 
 def download_images_if_needed(dirpath):
